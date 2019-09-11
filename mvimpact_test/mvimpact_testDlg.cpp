@@ -8,6 +8,12 @@
 #include "afxdialogex.h"
 
 
+//Active Functions
+//#define THREAD_MAIN_ACTIVE
+
+
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -51,6 +57,7 @@ END_MESSAGE_MAP()
 
 Cmvimpact_testDlg::Cmvimpact_testDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(Cmvimpact_testDlg::IDD, pParent)
+	, m_pMainThread(NULL)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -60,6 +67,9 @@ void Cmvimpact_testDlg::DoDataExchange(CDataExchange* pDX)
 
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_CAMERALIST, m_cameralist);
+	DDX_Control(pDX, IDC_LOG, m_Loglist);
+
+	
 
 }
 
@@ -67,11 +77,20 @@ BEGIN_MESSAGE_MAP(Cmvimpact_testDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+
+	// Mensagens enviadas pela dialog das ferramentas
+	ON_REGISTERED_MESSAGE(WM_SET_INTERFACE_FUNCTION, OnUWMSetInterfaceFunction)
+	ON_REGISTERED_MESSAGE(WM_MAIN_THREAD_CALLBACK, OnUWMMainThreadCallback)
+
+
 	ON_BN_CLICKED(IDC_BUTTON1, &Cmvimpact_testDlg::OnBnClickedRefreshCameras)
-
-
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CAMERALIST, &Cmvimpact_testDlg::OnLvnItemchangedCameralist)
 	ON_BN_CLICKED(IDC_BUTTON2, &Cmvimpact_testDlg::OnBnClickedClearCamList)
+	ON_BN_CLICKED(IDC_PLAY, &Cmvimpact_testDlg::OnBnClickedPlay)
+	ON_BN_CLICKED(IDC_STOP, &Cmvimpact_testDlg::OnBnClickedStop)
+
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LOG, &Cmvimpact_testDlg::OnLvnItemchangedLog)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -101,7 +120,17 @@ BOOL Cmvimpact_testDlg::OnInitDialog()
 		}
 	}
 
-	Init();
+	Init(); //Init m_hView | Init Device
+	
+
+#ifdef THREAD_MAIN_ACTIVE
+	
+	m_pMainThread = new CMainThread(m_hView);
+	m_pMainThread->Start();
+	m_pMainThread->ResumeThread();
+#endif // THREAD_MAIN_ACTIVE
+
+	
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
@@ -169,10 +198,35 @@ bool Cmvimpact_testDlg::Init()
 {
 	//Inicialization
 	InitListCtrl();
-	camera.Init();
+	DeviceMan.Init();
 	UpdateCameraInfoItems();
 
+	m_hView = this->m_hWnd;;
+
 	return true;
+}
+
+
+LRESULT Cmvimpact_testDlg::OnUWMMainThreadCallback(WPARAM wParam, LPARAM lParam)
+{
+
+	return 0;
+}
+
+LRESULT Cmvimpact_testDlg::OnUWMSetInterfaceFunction(WPARAM wParam, LPARAM lParam)
+{
+	if (!DeviceMan.Status() && int(wParam) == int(BTN_PLAY))
+	{
+		DeviceMan.Play();
+
+	}
+	else if (DeviceMan.Status() && int(wParam) == int(BTN_STOP))
+	{
+		DeviceMan.Stop();
+	}
+
+
+	return 0;
 }
 
 
@@ -180,6 +234,8 @@ bool Cmvimpact_testDlg::InitListCtrl()
 {
 //	if (!m_bIsInit || !UpdateData())
 //		return FALSE;
+
+	//1) CAMERA LIST
 
 	// TODO:  Add extra initialization here
 	// inicializar lista de defeitos 3d
@@ -202,6 +258,20 @@ bool Cmvimpact_testDlg::InitListCtrl()
 	m_cameralist.InsertColumn(7, _T("Registered For Direct Show"), LVCFMT_LEFT, 250);
 	m_cameralist.InsertColumn(8, _T("DirectShow Friendly Name"), LVCFMT_LEFT, 200);
 
+
+	//2) LOG LIST
+	ListView_SetExtendedListViewStyle(m_Loglist.m_hWnd,
+		LVS_EX_FULLROWSELECT |
+		LVS_EX_FLATSB |
+		LVS_EX_GRIDLINES |
+		LVS_EX_HEADERDRAGDROP);
+
+	m_Loglist.InsertColumn(0, _T("Date"), LVCFMT_LEFT, 200);
+	m_Loglist.InsertColumn(1, _T("Info"), LVCFMT_LEFT, 250);
+
+
+
+
 	return TRUE;
 }
 
@@ -213,8 +283,8 @@ void Cmvimpact_testDlg::UpdateCameraInfoItems()
 	CString strAux;
 
 
-	for (std::vector< CCamera::SCAMERAINFO >::const_iterator iter = camera.STLvec_CameraInfo.begin();
-		iter != camera.STLvec_CameraInfo.end(); ++iter)
+	for (std::vector< CDeviceMan::SCAMERAINFO >::const_iterator iter = DeviceMan.STLvec_CameraInfo.begin();
+		iter != DeviceMan.STLvec_CameraInfo.end(); ++iter)
 	{
 		//Insert
 		strAux.Format(L"%d", nRow);
@@ -256,12 +326,27 @@ void Cmvimpact_testDlg::UpdateCameraInfoItems()
 	
 }
 
+void Cmvimpact_testDlg::UpdateLogInfo(std::string str)
+{
+	int nRow = 0;
+	CString strAux;
+
+	//Insert
+	strAux.Format(L"%d", nRow);
+	m_Loglist.InsertItem(0, L"");
+
+
+	//Set Info
+	strAux = str.c_str();
+	m_Loglist.SetItemText(nRow, 1, strAux);
+}
+
 
 void Cmvimpact_testDlg::OnBnClickedRefreshCameras()
 {
 	// TODO: Add your control notification handler code here
 	//AfxMessageBox("TestDialog", MB_OK);
-	camera.ListCameras();
+	DeviceMan.ListCameras();
 	UpdateCameraInfoItems();
 	
 
@@ -283,4 +368,54 @@ void Cmvimpact_testDlg::OnLvnItemchangedCameralist(NMHDR *pNMHDR, LRESULT *pResu
 void Cmvimpact_testDlg::OnBnClickedClearCamList()
 {
 	m_cameralist.DeleteAllItems();
+}
+
+
+void Cmvimpact_testDlg::OnBnClickedPlay()
+{
+	::PostMessage(m_hView, WM_SET_INTERFACE_FUNCTION, BTN_PLAY, 0);
+
+}
+
+
+void Cmvimpact_testDlg::OnBnClickedStop()
+{
+	::PostMessage(m_hView, WM_SET_INTERFACE_FUNCTION, BTN_STOP, 0);
+
+}
+
+
+
+void Cmvimpact_testDlg::OnLvnItemchangedLog(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	*pResult = 0;
+}
+
+
+//IMPLEMENTAR O FECHO DA THREAD
+//Criar o OnClose da Dialog
+
+// Termino o Thread quando saio da Aplicação
+// if (pDoc->m_pCycleThread.get() != NULL)
+// {
+// 	pDoc->m_pCycleThread->Stop();
+// 	pDoc->m_pCycleThread->SyncStopThread();
+// }
+
+void Cmvimpact_testDlg::OnClose()
+{
+	// TODO: Add your message handler code here and/or call default
+
+#ifdef THREAD_MAIN_ACTIVE
+	//Terminar Thread
+	m_pMainThread->Stop();
+	m_pMainThread->Close();
+	m_pMainThread->SyncStopThread();
+
+	delete m_pMainThread;
+#endif // THREAD_MAIN_ACTIVE
+
+	CDialogEx::OnClose();
 }

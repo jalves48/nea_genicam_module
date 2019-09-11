@@ -112,7 +112,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;CPP_STANDARD_VERSION=11;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;CPP_STANDARD_VERSION=11;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;USE_DISPLAY;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>
       </SDLCheck>
       <AdditionalIncludeDirectories>..\..\;$(MVIMPACT_ACQUIRE_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -190,7 +190,12 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AcquireModule\Camera.h" />
+    <ClInclude Include="AcquireModule\AcqModule.h" />
+    <ClInclude Include="AcquireModule\CameraControl.h" />
+    <ClInclude Include="AcquireModule\Capture.h" />
+    <ClInclude Include="AcquireModule\DeviceMan.h" />
+    <ClInclude Include="DeclareUserMsg\DeclareUserMsg.h" />
+    <ClInclude Include="MainThread\MainThread.h" />
     <ClInclude Include="mvimpact_test.h" />
     <ClInclude Include="mvimpact_testDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -198,7 +203,9 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AcquireModule\Camera.cpp" />
+    <ClCompile Include="AcquireModule\Capture.cpp" />
+    <ClCompile Include="AcquireModule\DeviceMan.cpp" />
+    <ClCompile Include="MainThread\MainThread.cpp" />
     <ClCompile Include="mvimpact_test.cpp" />
     <ClCompile Include="mvimpact_testDlg.cpp" />
     <ClCompile Include="stdafx.cpp">

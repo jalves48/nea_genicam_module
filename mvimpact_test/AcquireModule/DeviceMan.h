@@ -1,24 +1,39 @@
-#include <algorithm>
-#include <iostream>
-#include <set>
-#include <string>
-#include <mvIMPACT_CPP/mvIMPACT_acquire.h>
+#include "AcqModule.h"
+#include "Capture.h"
 
 
 
 typedef bool(*SUPPORTED_DEVICE_CHECK)(const mvIMPACT::acquire::Device* const);
 
-class CCamera {       // The class
+
+class CDeviceMan {       // The class
 public:             // Access specifier
 	
-	CCamera();
-	~CCamera();
-	
+	CDeviceMan();
+	~CDeviceMan();
+
+	int Play();
+	int Stop();
+	void UpdateLogInfo(std::string str);
+
+	typedef enum { 
+		eCamStop	= 0,
+		eCamStart   = 1
+
+	}CAMSTATUS;
+
+	CAMSTATUS m_CamStatus;
+	int Status()
+	{return int(m_CamStatus);}
+
 	//Arguments
 	DeviceManager m_devMgr;
 	std::vector<mvIMPACT::acquire::Device*> m_v_devices;
+	Device* m_pDev;		//Pointer to Device
+	CCapture m_Capture;
 
 
+	std::string m_strLog;
 
 	typedef struct _sCameraInfo
 	{
@@ -60,6 +75,8 @@ public:
 	bool ListCameras();
 
 private:
+	int RunSequence(void);
 
 
 };
+

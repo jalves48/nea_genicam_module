@@ -1,9 +1,13 @@
 #include "..\stdafx.h"
-#include "Camera.h"
+#include "DeviceMan.h"
 #include <apps/Common/exampleHelper.h>
 #include <functional>
 #include <iostream>
+
+//////////////////////////////////////////////////////////////////////////
 #include <mvIMPACT_CPP/mvIMPACT_acquire_helper.h>
+#include "CameraControl.h"
+
 
 
 #ifdef _WIN32
@@ -16,24 +20,36 @@ using namespace mvIMPACT::acquire;
 using namespace std;
 
 
-CCamera::CCamera() {     // Constructor
-	//cout << "Hello World!";
+CDeviceMan::CDeviceMan()
+	: m_CamStatus(eCamStop)
+	, m_pDev(NULL)
+	, m_strLog("")
+
+{     // Constructor
+
+
 }
 
-CCamera::~CCamera() {     // Destructor
-	//cout << "By World!";
+CDeviceMan::~CDeviceMan()
+{     // Destructor
+
 }
 
-bool CCamera::Init()
+bool CDeviceMan::Init()
 {
-	ListCameras();
+	ListCameras(); 
 
 	
 
 	return true;
 }
 
-bool CCamera::ListCameras()
+void CDeviceMan::UpdateLogInfo(std::string str)
+{
+	m_strLog = str;
+}
+
+bool CDeviceMan::ListCameras()
 {
 	m_v_devices.clear();
 	getValidDevices(m_devMgr, m_v_devices);
@@ -58,11 +74,29 @@ bool CCamera::ListCameras()
 			sCameraInfo.FirmwareVersion		= pDev->firmwareVersion.readS();
 			sCameraInfo.LoadSettings		= pDev->loadSettings.readS();
 
-
-
 			STLvec_CameraInfo.push_back(sCameraInfo);
 		}
 	}
 
 	return 0;
 }
+
+
+
+int CDeviceMan::Play()
+{
+	m_pDev = getDeviceFromUserInput_(m_devMgr);
+	m_Capture.Init(m_pDev);
+	m_Capture.RunLive(m_pDev);
+	
+	return 0;
+}
+
+
+
+int CDeviceMan::Stop()
+{
+
+	return 0;
+}
+

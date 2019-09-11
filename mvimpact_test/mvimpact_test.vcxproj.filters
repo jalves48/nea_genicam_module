@@ -16,6 +16,12 @@
     <Filter Include="AcquireModule">
       <UniqueIdentifier>{6bdc7045-dd9c-4d1d-bde0-562f745a5cbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Auxiliary">
+      <UniqueIdentifier>{db768faa-c458-418c-b1ff-9feebcb3b4f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Auxiliary\MainThread">
+      <UniqueIdentifier>{9974eb0a-74a3-4bb5-a564-d1a3b8f57239}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -36,7 +42,22 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AcquireModule\Camera.h">
+    <ClInclude Include="AcquireModule\CameraControl.h">
+      <Filter>AcquireModule</Filter>
+    </ClInclude>
+    <ClInclude Include="DeclareUserMsg\DeclareUserMsg.h">
+      <Filter>Auxiliary</Filter>
+    </ClInclude>
+    <ClInclude Include="AcquireModule\AcqModule.h">
+      <Filter>AcquireModule</Filter>
+    </ClInclude>
+    <ClInclude Include="AcquireModule\DeviceMan.h">
+      <Filter>AcquireModule</Filter>
+    </ClInclude>
+    <ClInclude Include="MainThread\MainThread.h">
+      <Filter>Auxiliary\MainThread</Filter>
+    </ClInclude>
+    <ClInclude Include="AcquireModule\Capture.h">
       <Filter>AcquireModule</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,7 +71,13 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AcquireModule\Camera.cpp">
+    <ClCompile Include="AcquireModule\DeviceMan.cpp">
+      <Filter>AcquireModule</Filter>
+    </ClCompile>
+    <ClCompile Include="MainThread\MainThread.cpp">
+      <Filter>Auxiliary\MainThread</Filter>
+    </ClCompile>
+    <ClCompile Include="AcquireModule\Capture.cpp">
       <Filter>AcquireModule</Filter>
     </ClCompile>
   </ItemGroup>
